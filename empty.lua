@@ -1,0 +1,1 @@
+-- DEV ONLY: in case the MCU in a crash loop, upload this file as init.lua to stop rebooting during flashing
