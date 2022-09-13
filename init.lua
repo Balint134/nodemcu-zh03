@@ -8,8 +8,6 @@ local sensor_name = 'aqs-' .. node.chipid()
 
 
 print('Connecting to network... (60 sec timeout)')
--- restart the sensor in case network connection can not be established for more than 60 seconds
-tmr.softwd(60) 
 local wifi_conf = {
   ssid = config.wifi_ssid,
   pwd = config.wifi_pwd,
@@ -18,7 +16,7 @@ local wifi_conf = {
   end,
 
   disconnect_cb = function(ret) 
-    print('Disconnected from ' .. ret.SSID)
+    print('Disconnected from ' .. ret.SSID .. '! Reason: ' .. ret.reason)
     node.restart() -- TODO maybe use a timer and reconnect instead of restarting the sensor
   end,
 
@@ -99,7 +97,7 @@ function handle_mqtt_success(client)
     }]], reading.pm1_0, reading.pm2_5, reading.pm10, reading.aqi2_5, reading.aqi10)
     client:publish(state_topic, payload, 1, 0)
     -- restart the device if no new sensor measurement for more than 10 seconds
-    tmr.softwd(10)
+    --tmr.softwd(10)
   end)
 
   -- mark sensor online

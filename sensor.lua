@@ -13,6 +13,8 @@ zh03.ACTIVE = 2
 zh03.last_measure = { pm2_5 = 0, pm10 = 0, pm1_0 = 0, aqi2_5 = 0, aqi10 = 0 }
 -- Current sensor state
 zh03.state = zh03.ERR
+-- last data microseconds
+zh03.last_data = 0
 
 -- Init sensor
 function zh03:init(on_measure)
@@ -22,7 +24,11 @@ function zh03:init(on_measure)
 
   print('Initializing Sensor\nUsing sUART (TX: D2, RX: D3) for particle sensor')
   self.uart:on('data', 24, function(str)
+    local now = tmr.now()
     local data = { str:byte(1, -1) }
+
+    print('Received data after ' .. (now - self.last_data) .. 'uS')
+    self.last_data = now
 
     if self.debug then dump(data) end
     if not chkvalid(data) then
@@ -44,6 +50,7 @@ function zh03:init(on_measure)
       if on_measure then 
         on_measure(self.last_measure)
       end
+      print('OnData callback took ' .. tmr.now() - now .. ' us')
     end
   end)
 

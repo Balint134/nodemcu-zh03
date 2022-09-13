@@ -1,10 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 DIR=$(pwd)
 TOOLS_DIR="$DIR/.tools"
 
 DEFAULT_BAUD=115200
 ESPTOOL="$TOOLS_DIR/esptool.py"
 LUATOOL="$TOOLS_DIR/luatool.py"
+
+PORT="/dev/ttyUSB0"
 
 if [ ! -f "$DIR/config.lua" ]; then
   echo "***No 'config.lua' found, use 'config.sample.lua' to create your configuration***"
@@ -46,9 +48,9 @@ if [ ! -f "$TOOLS_DIR/esptool.py" ]; then
   (cd $TOOLS_DIR && curl -O https://raw.githubusercontent.com/espressif/esptool/master/esptool.py)
 fi
 
-echo "\nFlashing NodeMCU firmware to device, this will erase all content!"
-sudo python $ESPTOOL --port $PORT --baud $BAUD erase_flash
-sudo python $ESPTOOL --port $PORT --baud $BAUD write_flash 0x00000 $DIR/nodemcu-fw.bin
+echo "\nFlashing NodeMCU firmware to device, this will erase all content on port '$PORT'!"
+sudo python3 -m esptool --port $PORT --baud $BAUD erase_flash
+sudo python3 -m esptool --port $PORT --baud $BAUD write_flash 0x00000 $DIR/nodemcu-fw.bin
 
 if [ $? -ne 0 ]; then
   exit
@@ -60,7 +62,7 @@ ls | grep .lua | grep -v .sample.lua | while read -r f; do
 
   RET=-1
   while [ $RET -ne 0 ]; do
-    sudo python $LUATOOL --port $PORT --baud $BAUD --src $DIR/$f --dest $f >/dev/null 2>&1
+    sudo $LUATOOL --port $PORT --baud $BAUD --src $DIR/$f --dest $f >/dev/null 2>&1
     RET=$?
     if [ $RET -eq 0 ]; then
       echo "->Done"
